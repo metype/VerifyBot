@@ -49,24 +49,6 @@ client.on('interactionCreate', async interaction => {
 	} else if (interaction.isButton()) {
 		let buttonID = interaction.component.customId;
 		let user = interaction.user;
-		if (buttonID == "activate-account") {
-			const row = new ActionRowBuilder()
-			.addComponents(
-				new ButtonBuilder()
-					.setCustomId('java-account')
-					.setLabel('Java')
-					.setStyle(ButtonStyle.Primary),
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setCustomId('bedrock-account')
-					.setLabel('Bedrock')
-					.setStyle(ButtonStyle.Primary),
-			)
-			interaction.deferUpdate();
-			
-			return user.send({ content: 'What type of account do you plan on playing the server with?', components: [row] });
-		}
 		if (buttonID == "java-account") {
 			const modal = new ModalBuilder()
 			.setCustomId('java-account-info')
@@ -186,7 +168,10 @@ client.on('interactionCreate', async interaction => {
 
 			member.roles.add(get(interaction.guildId).get('activated-role').object);
 
-			member.send("Your activation request was accepted! Have fun!");
+			let channelID = get(interaction.guildId).get("verify-channel").object;
+        	let channel = interaction.client.channels.cache.get(channelID);
+
+			channel.send(`<@${member.id}> Your activation request was accepted! Have fun!`);
 
 			interaction.message.edit({content: interaction.message.content + "\n:white_check_mark: - Accepted", components: [] });
 			interaction.deferUpdate();
@@ -223,7 +208,7 @@ client.on('interactionCreate', async interaction => {
 		}
 	} else if (interaction.isModalSubmit()) {
 		if (interaction.customId == "java-account-info") {
-			await interaction.deferReply("Checking info...")
+			await interaction.deferReply({ content: "Checking info...", ephemeral: true })
 			let accountExists = false;
 			let submittedName = interaction.fields.getTextInputValue('nameInput');
 			let submittedRelation = interaction.fields.getTextInputValue('relationInput');
@@ -247,10 +232,10 @@ client.on('interactionCreate', async interaction => {
 				return await interaction.editReply({ content: 'Minecraft username belongs to a non-existant account or an account with only the demo.' });
 			}
 
-			let activateChannelID = get('871724942260076614').get('activate-channel').object;
+			let activateChannelID = get(interaction.guild.id).get('activate-channel').object;
 			let activateChannel = interaction.client.channels.cache.get(activateChannelID);
 
-			let formattedApplicationLines = [`**New Activation Appication from ${interaction.user.tag}**:\n`,
+			let formattedApplicationLines = [`**<@&958772125043404881> New Activation Appication from ${interaction.user.tag}**:\n`,
 				`Name: **${submittedName}**`,
 				`TNTech Relation: **${submittedRelation}**`,
 				`MC Username: **${submittedUsername}**`,
@@ -275,10 +260,10 @@ client.on('interactionCreate', async interaction => {
 
 			activateChannel.send({ content: formattedApplicationLines.join("\n"), components: [row] });
 
-			return await interaction.editReply({ content: 'Your info will be looked at, and your account should be activated soon!' });
+			return await interaction.editReply({ content: 'Your info will be looked at, and your account should be activated soon!', ephemeral: true });
 		}
 		if (interaction.customId == "bedrock-account-info") {
-			await interaction.deferReply("Checking info...")
+			await interaction.deferReply({content: "Checking info...", ephemeral: true })
 			let accountExists = false;
 			let submittedName = interaction.fields.getTextInputValue('nameInput');
 			let submittedRelation = interaction.fields.getTextInputValue('relationInput');
@@ -286,10 +271,10 @@ client.on('interactionCreate', async interaction => {
 			let submittedDiscordNickname = interaction.fields.getTextInputValue('discordNicknameInput');
 			let submittedMinecraftNickname = interaction.fields.getTextInputValue('minecraftNicknameInput');
 
-			let activateChannelID = get('871724942260076614').get('activate-channel').object;
+			let activateChannelID = get(interaction.guild.id).get('activate-channel').object;
 			let activateChannel = interaction.client.channels.cache.get(activateChannelID);
 
-			let formattedApplicationLines = [`**New Activation Appication from ${interaction.user.tag}**:\n`,
+			let formattedApplicationLines = [`**<@&958772125043404881> New Activation Appication from ${interaction.user.tag}**:\n`,
 				`Name: **${submittedName}**`,
 				`TNTech Relation: **${submittedRelation}**`,
 				`MC Username: **${submittedUsername}**`,
@@ -314,21 +299,23 @@ client.on('interactionCreate', async interaction => {
 
 			activateChannel.send({ content: formattedApplicationLines.join("\n"), components: [row] });
 
-			return await interaction.editReply({ content: 'Your info will be looked at, and your account should be activated soon!' });
+			return await interaction.editReply({ content: 'Your info will be looked at, and your account should be activated soon!', ephemeral:true });
 		}
 		if (interaction.customId.startsWith("deny-reason-")) {
 			let userID = interaction.customId.split('deny-reason-')[1];
 			let user = interaction.client.users.cache.get(userID);
+			let channelID = get(interaction.guildId).get("verify-channel").object;
+        	let channel = interaction.client.channels.cache.get(channelID);
 
 			let reason = interaction.fields.getTextInputValue('reasonInput');
 
 			interaction.deferUpdate();
 
 			if (reason.length > 0) {
-				return await user.send(`Your application request was denied.\nReason: **${reason}**`)
+				return await channel.send(`<@${user.id}> Your application request was denied.\nReason: **${reason}**`)
 			}
 
-			return await user.send(`Your application request was denied.`)
+			return await user.send(`<@${user.id}>  Your application request was denied.`)
 		}
 	}
 });

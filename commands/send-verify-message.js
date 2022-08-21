@@ -17,11 +17,18 @@ module.exports = {
         const row = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId('activate-account')
-					.setLabel('Activate Account')
+					.setCustomId('java-account')
+					.setLabel('Java')
 					.setStyle(ButtonStyle.Primary),
-        )
-        interaction.reply({ content: `Message sent.`, ephemeral: true })
-        return await channel.send({ content: 'Click the button to get your account activated and whitelisted on the server!', components: [row] });
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setCustomId('bedrock-account')
+					.setLabel('Bedrock')
+					.setStyle(ButtonStyle.Primary),
+			)
+			
+            channel.send({ content: 'To get started with verification; choose the account type you\'ll be playing on the server with.', components: [row] });
+            return interaction.reply({ content: `Message sent.`, ephemeral: true })
 	},
 };
