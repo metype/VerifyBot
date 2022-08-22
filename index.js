@@ -5,7 +5,7 @@ const { token } = require('./config.json');
 const { setSaveInterval, get } = require('./settings');
 const fetch = require('node-fetch');
 
-setSaveInterval(60000); //Settings are comitted every 1 minute.
+setSaveInterval(15000); //Settings are comitted every 1 minute.
 
 // Create a new client instance
 const client = new Client({
@@ -164,47 +164,26 @@ client.on('interactionCreate', async interaction => {
 		if (buttonID.startsWith('accept-application')) {
 			let userID = buttonID.split('accept-application-')[1];
 			let user = interaction.client.users.cache.get(userID);
+			if (user == undefined) {
+				interaction.message.edit({content: interaction.message.content + "\n:question: - Error accepting app", components: [] });
+				return await interaction.reply({content:"There was an error accepting this application.", ephemeral:true})
+			}
+
 			let member = interaction.guild.members.cache.get(user.id);
 
 			member.roles.add(get(interaction.guildId).get('activated-role').object);
 
-			let channelID = get(interaction.guildId).get("verify-channel").object;
+			let channelID = get(interaction.guildId).get("verified-channel").object;
         	let channel = interaction.client.channels.cache.get(channelID);
 
-			channel.send(`<@${member.id}> Your activation request was accepted! Have fun!`);
+			channel.send(`<@${member.id}> Your verification request was accepted! Have fun!`);
 
 			interaction.message.edit({content: interaction.message.content + "\n:white_check_mark: - Accepted", components: [] });
 			interaction.deferUpdate();
 		}
 		if (buttonID.startsWith('deny-application')) {
-			let userID = buttonID.split('deny-application-')[1];
-
-			const modal = new ModalBuilder()
-				.setCustomId(`deny-reason-${userID}`)
-			.setTitle('Deny Application');
-
-		//Add components to modal
-			
-			const reasonInput = new TextInputBuilder()
-				.setCustomId('reasonInput')
-				// The label is the prompt the user sees for this input
-				.setLabel("Reason?")
-				// Short means only a single line of text
-				.setStyle(TextInputStyle.Paragraph)
-				.setRequired(false);
-			
-		// An action row only holds one text input,
-		// so you need one action row per text input.
-			const firstActionRow = new ActionRowBuilder().addComponents(reasonInput);
-
-		// Add inputs to the modal
-			modal.addComponents(firstActionRow);
-
 			interaction.message.edit({ content: interaction.message.content + "\n:x: - Denied", components: [] });
-
-			
-
-			return await interaction.showModal(modal);
+			return await interaction.deferUpdate();
 		}
 	} else if (interaction.isModalSubmit()) {
 		if (interaction.customId == "java-account-info") {
@@ -300,22 +279,6 @@ client.on('interactionCreate', async interaction => {
 			activateChannel.send({ content: formattedApplicationLines.join("\n"), components: [row] });
 
 			return await interaction.editReply({ content: 'Your info will be looked at, and your account should be activated soon!', ephemeral:true });
-		}
-		if (interaction.customId.startsWith("deny-reason-")) {
-			let userID = interaction.customId.split('deny-reason-')[1];
-			let user = interaction.client.users.cache.get(userID);
-			let channelID = get(interaction.guildId).get("verify-channel").object;
-        	let channel = interaction.client.channels.cache.get(channelID);
-
-			let reason = interaction.fields.getTextInputValue('reasonInput');
-
-			interaction.deferUpdate();
-
-			if (reason.length > 0) {
-				return await channel.send(`<@${user.id}> Your application request was denied.\nReason: **${reason}**`)
-			}
-
-			return await user.send(`<@${user.id}>  Your application request was denied.`)
 		}
 	}
 });
