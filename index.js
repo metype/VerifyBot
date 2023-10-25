@@ -174,7 +174,7 @@ client.on('interactionCreate', async interaction => {
 			console.log(`Should be connecting to ${RCON_IP}:${RCON_PORT} with password ${RCON_PASSWORD}`)
 			
 			const Rcon = require('modern-rcon');
-			const rcon = new Rcon(RCON_IP, RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT);
+			const rcon = new Rcon(RCON_IP, Number(RCON_PORT), RCON_PASSWORD, RCON_TIMEOUT);
 			rcon.connect().then(() => {
 			  return rcon.send(`verify ${buttonID.split('-')[3]}`); // That's a command for Minecraft
 			}).then(res => {
