@@ -5,6 +5,12 @@ const { token } = require('./config.json');
 const { setSaveInterval, get } = require('./settings');
 const fetch = require('node-fetch');
 
+const RCON_IP = "192.168.0.1";
+const RCON_PORT = 25775;
+const RCON_PASSWORD = "PASSWORD	";
+const RCON_TIMEOUT = 5000;
+
+
 setSaveInterval(15000); //Settings are comitted every 1 minute.
 
 // Create a new client instance
@@ -162,13 +168,25 @@ client.on('interactionCreate', async interaction => {
 		return await interaction.showModal(modal);
 		}
 		if (buttonID.startsWith('accept-application')) {
-			let userID = buttonID.split('accept-application-')[1];
+			let userID = buttonID.split('-')[2];
 			let user = interaction.client.users.cache.get(userID);
 			if (user == undefined) {
 				interaction.message.edit({content: interaction.message.content + "\n:question: - Error accepting app", components: [] });
 				return await interaction.reply({content:"There was an error accepting this application.", ephemeral:true})
 			}
-
+			
+			const Rcon = require('modern-rcon');
+			const rcon = new Rcon(RCON_IP,RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT);
+			rcon.connect().then(() => {
+				console.log(`${buttonID.split('-')[3]}`);
+			  return rcon.send(`verify ${buttonID.split('-')[3]}`); // That's a command for Minecraft
+			}).then(res => {
+			  response = res;
+			  interaction.message.edit({content: interaction.message.content + `\n${res}\n:white_check_mark: - Accepted`, components: [] });
+			  interaction.deferUpdate();
+			}).then(() => {
+			  return rcon.disconnect();
+			});
 			let member = interaction.guild.members.cache.get(user.id);
 
 			member.roles.add(get(interaction.guildId).get('activated-role').object);
@@ -178,8 +196,7 @@ client.on('interactionCreate', async interaction => {
 
 			channel.send(`<@${member.id}> Your verification request was accepted! Have fun!`);
 
-			interaction.message.edit({content: interaction.message.content + "\n:white_check_mark: - Accepted", components: [] });
-			interaction.deferUpdate();
+
 		}
 		if (buttonID.startsWith('deny-application')) {
 			interaction.message.edit({ content: interaction.message.content + "\n:x: - Denied", components: [] });
@@ -226,7 +243,7 @@ client.on('interactionCreate', async interaction => {
 			const row = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(`accept-application-${interaction.user.id}`)
+					.setCustomId(`accept-application-${interaction.user.id}-${submittedUsername}`)
 					.setLabel('Accept')
 					.setStyle(ButtonStyle.Success),
 			)
@@ -265,7 +282,7 @@ client.on('interactionCreate', async interaction => {
 			const row = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(`accept-application-${interaction.user.id}`)
+					.setCustomId(`accept-application-${interaction.user.id}-.${submittedUsername}`)
 					.setLabel('Accept')
 					.setStyle(ButtonStyle.Success),
 			)
@@ -281,10 +298,6 @@ client.on('interactionCreate', async interaction => {
 			return await interaction.editReply({ content: 'Your info will be looked at, and your account should be activated soon!', ephemeral:true });
 		}
 	}
-});
-
-client.on('guildMemberAdd', member => {
-    
 });
 
 // Login to Discord with your client's token
