@@ -5,6 +5,8 @@ const { RCON_IP, RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT, token } = require('./co
 const { setSaveInterval, get } = require('./settings');
 const fetch = require('node-fetch');
 
+console.log(RCON_PORT);
+
 setSaveInterval(15000); //Settings are comitted every 1 minute.
 
 // Create a new client instance
@@ -168,6 +170,8 @@ client.on('interactionCreate', async interaction => {
 				interaction.message.edit({content: interaction.message.content + "\n:question: - Error accepting app", components: [] });
 				return await interaction.reply({content:"There was an error accepting this application.", ephemeral:true})
 			}
+
+			console.log(`Should be connecting to ${RCON_IP}:${RCON_PORT} with password ${RCON_PASSWORD}`)
 			
 			const Rcon = require('modern-rcon');
 			const rcon = new Rcon(RCON_IP, RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT);
