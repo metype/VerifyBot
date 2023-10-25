@@ -1,15 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder , TextInputBuilder, TextInputStyle, SelectMenuBuilder } = require('discord.js');
-const { token } = require('./config.json');
+const { RCON_IP, RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT, token } = require('./config.json');
 const { setSaveInterval, get } = require('./settings');
 const fetch = require('node-fetch');
-
-const RCON_IP = "192.168.0.1";
-const RCON_PORT = 25775;
-const RCON_PASSWORD = "PASSWORD	";
-const RCON_TIMEOUT = 5000;
-
 
 setSaveInterval(15000); //Settings are comitted every 1 minute.
 
@@ -176,10 +170,9 @@ client.on('interactionCreate', async interaction => {
 			}
 			
 			const Rcon = require('modern-rcon');
-			const rcon = new Rcon(RCON_IP,RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT);
+			const rcon = new Rcon(RCON_IP, RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT);
 			rcon.connect().then(() => {
-				console.log(`${buttonID.split('-')[3]}`);
-			  return rcon.send(`verify ${buttonID.split('-')[3]}`); // That's a command for Minecraft
+			  return rcon.send(`say ${buttonID.split('-')[3]}`); // That's a command for Minecraft
 			}).then(res => {
 			  response = res;
 			  interaction.message.edit({content: interaction.message.content + `\n${res}\n:white_check_mark: - Accepted`, components: [] });
