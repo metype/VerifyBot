@@ -172,7 +172,7 @@ client.on('interactionCreate', async interaction => {
 			const Rcon = require('modern-rcon');
 			const rcon = new Rcon(RCON_IP, RCON_PORT, RCON_PASSWORD, RCON_TIMEOUT);
 			rcon.connect().then(() => {
-			  return rcon.send(`say ${buttonID.split('-')[3]}`); // That's a command for Minecraft
+			  return rcon.send(`verify ${buttonID.split('-')[3]}`); // That's a command for Minecraft
 			}).then(res => {
 			  response = res;
 			  interaction.message.edit({content: interaction.message.content + `\n${res}\n:white_check_mark: - Accepted`, components: [] });
